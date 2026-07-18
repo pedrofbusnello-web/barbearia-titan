@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="login-box">
+        <h1>Criar conta</h1>
+        <form method="POST" action="/cadastro">
+            <label for="usuario">Usuário:</label><br>
+            <input type="text" id="usuario" name="usuario" placeholder="Digite seu usuário" required><br><br>
+
+            <label for="telefone">Telefone:</label><br>
+            <input type="tel" id="telefone" name="telefone" placeholder="(54) 99999-9999" required><br><br>
+        
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" placeholder="Digite seu email" required><br><br>
+        
+            <label for="senha">Senha:</label><br>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required><br><br>
+
+            <label for="confsenha">Confirmar Senha:</label><br>
+            <input type="password" id="confsenha" name="confsenha" placeholder="Digite sua senha novamente" required><br><br>
+
+            <input type="submit" value="Cadastrar">
+            <p class="mensagem">
+                {{ mensagem }}
+            </p>
+        </form>
+    </div>
+    
+</body>
+</html>

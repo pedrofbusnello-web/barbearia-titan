@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minha Conta - Barbeiro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='contabarbeiro.css') }}">
+</head>
+
+<body>
+
+    <div class="topo">
+        <h1>BARBEARIA TITAN</h1>
+        <button class="menu" onclick="abrirMenu()">☰</button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <a href="/meusdados">Meus dados</a>
+        <a href="/logout">Sair</a>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="cards">
+
+    <div class="card">
+        <h3>Resumo do dia</h3>
+        <p>Total de agendamentos: {{ agenda|length }}</p>
+
+        <p>
+            Status pendentes:
+            {% set pendentes = agenda|selectattr('status', 'equalto', 'AGENDADO')|list|length %}
+            {{ pendentes }}
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Controle rápido</h3>
+        <p>Use os botões abaixo para gerenciar a agenda em tempo real</p>
+
+        <div style="margin-top:15px;">
+            <a href="/bloquear-horario">
+                <button style="background:#ff6b6b; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">
+                    🚫 Bloquear horário
+                </button>
+            </a>
+        </div>
+    </div>
+
+</div> <!-- FECHA A DIV .cards -->
+
+<!-- AGENDA -->
+<div class="agenda">
+
+    <h2>Agenda</h2>
+
+    {% if agenda %}
+    {% for a in agenda %}
+    <div class="cliente">
+        <p><strong>{{ a["nome"] }}</strong> • {{ a["servico"] }}</p>
+        <span>{{ a["data"] }} • {{ a["horario"] }}</span>
+        <p style="font-size:13px; color:#555;">
+            📞 {{ a["telefone"] }}
+            {% if a["pagamento"] != '-' %} | 💳 {{ a["pagamento"] }}{% endif %}
+            {% if a["observacoes"] != '-' %} | 📝 {{ a["observacoes"] }}{% endif %}
+        </p>
+        <p>Status: <strong>{{ a["status"] }}</strong></p>
+        <div style="margin-top:10px;">
+            <a href="/atualizar-status/{{ a['id'] }}/CONFIRMADO">Confirmar</a> |
+            <a href="/atualizar-status/{{ a['id'] }}/CONCLUIDO">Concluir</a> |
+            <a href="/atualizar-status/{{ a['id'] }}/CANCELADO" style="color:red;">Cancelar</a>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="text-align:center; color:#999;">Nenhum agendamento ainda</p>
+{% endif %}
+
+</div>
+
+    <script>
+    function abrirMenu() {
+        console.log("Clicou no menu!");
+        const sidebar = document.getElementById("sidebar");
+        console.log("Sidebar:", sidebar);
+        if (sidebar) {
+            sidebar.classList.toggle("ativo");
+            console.log("Toggled! Classes:", sidebar.classList);
+        }
+    }
+
+    document.addEventListener("click", function(e) {
+        const sidebar = document.getElementById("sidebar");
+        const botao = document.querySelector(".menu");
+        if (sidebar && botao) {
+            if (!sidebar.contains(e.target) && !botao.contains(e.target)) {
+                sidebar.classList.remove("ativo");
+            }
+        }
+    });
+    </script>
+
+</body>
+</html>

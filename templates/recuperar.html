@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recuperar Senha</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="login-box">
+
+        <h1>Recuperar Senha</h1>
+
+        {% if enviado %}
+
+        <p>✅ Mensagem recebida!</p>
+        <p>Entre em contato com a barbearia pelo WhatsApp abaixo e informe seu usuário ou email. Redefiniremos sua senha para você.</p>
+
+        <a href="https://wa.me/5554999999999" target="_blank">
+            <input type="submit" value="Abrir WhatsApp">
+        </a>
+
+        <br><br>
+        <p><a href="/login">← Voltar ao login</a></p>
+
+        {% else %}
+
+        <p>Para redefinir sua senha, clique no botão abaixo e entre em contato com a barbearia pelo WhatsApp informando seu usuário ou email cadastrado.</p>
+
+        <form method="POST" action="/recuperar-senha">
+            <input type="submit" value="Solicitar redefinição de senha">
+        </form>
+
+        <br>
+        <p><a href="/login">← Voltar ao login</a></p>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

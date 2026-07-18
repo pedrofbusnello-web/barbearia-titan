@@ -1,0 +1,63 @@
+.container {
+    max-width: 1200px;
+    width: 90%;
+    margin: auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.card {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+body {
+    background: #eaeaea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}
+.plan-name {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+.price {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+.plan-description {
+    margin: 4px 0;
+}
+.btn-clube {
+    background-color: #111;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: Poppins, sans-serif;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-clube:hover {
+    background-color: #333;
+    transform: scale(1.03);
+}
+.card,
+button {
+    transition: 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-4px);
+}

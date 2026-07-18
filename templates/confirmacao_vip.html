@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plano contratado!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='confirmacao.css') }}">
+</head>
+<body>
+    <div class="container">
+
+        <h1>✔ Plano contratado com sucesso!</h1>
+
+        <p>Seu plano VIP foi ativado e o agendamento está confirmado.</p>
+
+        <div style="background:#f8f8f8; border-radius:10px; padding:20px; margin:20px 0; text-align:left;">
+            <p><strong>Plano:</strong> {{ plano }}</p>
+            <p><strong>Profissional:</strong> {{ profissional }}</p>
+            <p><strong>Data:</strong> {{ data }}</p>
+            <p><strong>Horário:</strong> {{ horario }}</p>
+            <p><strong>Pagamento:</strong> {{ pagamento }}</p>
+        </div>
+
+        <p class="info-pagamento">
+            O pagamento será realizado presencialmente na barbearia.
+        </p>
+
+        <a href="/minhaconta">
+            <button>Ver minha conta</button>
+        </a>
+
+    </div>
+</body>
+</html>

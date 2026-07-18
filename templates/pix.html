@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagamento PIX</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pix.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Pagamento PIX</h1>
+
+    <div class="valor">
+        R$ {{ valor }}
+    </div>
+
+    <div class="qr-code">
+        <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR Code PIX">
+    </div>
+
+    <h3>Chave PIX</h3>
+
+    <div class="chave" id="chavePix">
+        12345678900
+    </div>
+
+    <button
+        onclick="copiarChave()"
+        type="button"
+        style="background:#f0f0f0; color:#333; border:1px solid #ddd; padding:10px 20px; border-radius:10px; cursor:pointer; margin-bottom:20px; width:100%; font-size:15px;"
+    >
+        📋 Copiar chave PIX
+    </button>
+
+    <p id="mensagemCopiado" style="display:none; color:green; text-align:center; margin-bottom:15px;">
+        ✅ Chave copiada!
+    </p>
+
+    <form action="/pix_confirmado" method="POST">
+
+        <input type="hidden" name="plano" value="{{ plano }}">
+        <input type="hidden" name="valor" value="{{ valor }}">
+        <input type="hidden" name="profissional" value="{{ profissional }}">
+        <input type="hidden" name="pagamento" value="Pix">
+
+        <button type="submit" class="btn">
+            Já realizei o pagamento
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+    function copiarChave() {
+        const chave = document.getElementById("chavePix").innerText.trim();
+        navigator.clipboard.writeText(chave).then(function() {
+            const msg = document.getElementById("mensagemCopiado");
+            msg.style.display = "block";
+            setTimeout(function() {
+                msg.style.display = "none";
+            }, 3000);
+        }).catch(function() {
+            alert("Chave PIX: " + chave);
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agendamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='agendamento.css') }}">
+
+</head>
+<body>
+    <div class="container">
+    <h1>Agendar horário</h1>
+    <hr>
+
+    {% if erro %}
+    <div style="color: red; margin-bottom: 20px; padding: 10px; background: #ffe6e6; border-radius: 5px;">
+        {{ erro }}
+    </div>
+    {% endif %}
+
+    <form action="/agendar" method="post">
+        <div class="linha">       
+            <div>
+                <label for="servico">Serviço</label>
+            <select name="servico" id="servico" required>
+                <option value="" disabled selected>
+                    Selecione um serviço
+                </option>
+
+                <option value="corte">Corte de Cabelo degradê - R$ 40</option>
+                <option value="barba">Corte de Barba completo - R$ 30</option>
+                <option value="sobrancelha">Sobrancelha - R$ 15</option>
+                <option value="corte+barba">Cabelo + Barba - R$ 65</option>
+                <option value="corte+sobrancelha">Cabelo + Sobrancelha - R$ 55</option>
+                <option value="barba+sobrancelha">Barba + Sobrancelha - R$ 45</option>
+                <option value="corte+barba+sobrancelha">Cabelo + Barba + Sobrancelha - R$ 80</option>
+            </select>
+            </div>
+            <div>
+                <label for="profissional">Profissional</label>
+            <select name="profissional" id="profissional" required>
+                <option value="" disabled selected>
+                    Selecione um profissional
+                </option>
+
+                <option value="joao">João</option>
+                <option value="pedro">Pedro</option>
+                <option value="bernardo">Bernardo</option>
+                <option value="pablo">Pablo</option>
+            </select>
+            </div>
+        </div>
+
+
+        <div class="linha">
+            <div>
+            <label for="data">Data</label>
+            <input type="date" name="data" id="data" required>
+            </div>
+            <div>
+            <label for="horario">Horário</label>
+            <select name="horario" id="horario" required>
+                <option value="" disabled selected>
+                    Selecione data e profissional primeiro
+                </option>
+            </select>
+            </div>
+            <div>
+            <label for="pagamento">Forma de Pagamento</label>
+        <select name="pagamento" id="pagamento" required>
+            <option value="" disabled selected>
+                Selecione uma forma de pagamento
+            </option>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="cc">Cartão de crédito</option>
+            <option value="cd">Cartão de débito</option>
+            <option value="Pix">Pix</option>
+        </select>
+        <small class="info-pagamento">
+            info: Pagamento realizado apenas presencialmente.
+        </small>
+            </div> 
+        </div>
+        <div class="linha">
+            <div>
+            <label for="nome">Nome completo</label>
+            <input type="text" placeholder="Nome completo" name="nome" required>
+            </div>
+            <div>
+            <label for="telefone">Telefone</label>
+            <input type="tel" placeholder="(54) 99999-9999" name="telefone" required>
+            </div>
+        </div>
+        <div class="linha">
+            <div>
+            <label for="observacoes">Observações</label>
+            <textarea name="observacoes" placeholder="Observações"></textarea>
+            </div>
+        </div>
+        <div class="botoes">
+            <a href="/">
+                <button type="button">Cancelar</button>
+            </a>
+            <button type="submit">Confirmar</button>
+        </div>
+        </form>
+    </div>
+
+    <script>
+        const campoData = document.getElementById("data");
+        const campoProfissional = document.getElementById("profissional");
+        const campoHorario = document.getElementById("horario");
+
+        // Bloqueia datas passadas no calendário
+        const hoje = new Date().toISOString().split("T")[0];
+        campoData.setAttribute("min", hoje);
+
+        async function atualizarHorarios() {
+            const data = campoData.value;
+            const profissional = campoProfissional.value;
+
+            campoHorario.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+
+            if (!data || !profissional) {
+                campoHorario.innerHTML = '<option value="" disabled selected>Selecione data e profissional primeiro</option>';
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/horarios-disponiveis?data=${data}&profissional=${profissional}`);
+                const dados = await resposta.json();
+
+                if (!dados.horarios || dados.horarios.length === 0) {
+                    campoHorario.innerHTML = '<option value="" disabled selected>Nenhum horário disponível nesse dia</option>';
+                    return;
+                }
+
+                let opcoes = '<option value="" disabled selected>Selecione um horário</option>';
+                dados.horarios.forEach(h => {
+                    opcoes += `<option value="${h}">${h}</option>`;
+                });
+                campoHorario.innerHTML = opcoes;
+
+            } catch (erro) {
+                campoHorario.innerHTML = '<option value="" disabled selected>Erro ao carregar horários</option>';
+            }
+        }
+
+        campoData.addEventListener("change", atualizarHorarios);
+        campoProfissional.addEventListener("change", atualizarHorarios);
+    </script>
+</body>
+</html>

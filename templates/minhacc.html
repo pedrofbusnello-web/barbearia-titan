@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minha Conta</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='minhacc.css') }}">
+</head>
+
+<body>
+
+    <!-- TOPO -->
+    <div class="topo">
+        <h1>BARBEARIA TITAN</h1>
+        <button class="menu" onclick="abrirMenu()">☰</button>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <a href="/meusdados">Meus dados</a>
+        <a href="#historico">Histórico de cortes</a>
+        <a href="/logout">Sair</a>
+    </div>
+
+    <!-- CARDS -->
+    <div class="cards">
+        {% if proximo %}
+            <div class="card">
+                <h3>Meu Plano</h3>
+                <p>{{ proximo.plano if proximo.plano else "Avulso" }}</p>
+                <span>Status: Ativo</span>
+            </div>
+
+            <div class="card">
+                <h3>Próximo Agendamento</h3>
+                <p>{{ proximo.data }}</p>
+                <p>{{ proximo.horario }}</p>
+                <span>Profissional: {{ proximo.profissional }}</span>
+                <p style="margin-top: 8px; font-size: 0.9em;">
+                    {{ proximo.servico if proximo.servico else proximo.plano }}
+                </p>
+            </div>
+        {% else %}
+        <div class="card">
+            <h3>Nenhum agendamento futuro</h3>
+            <p>Você ainda não tem horários marcados</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- AÇÃO -->
+    <div class="acoes">
+        <a href="/agendamento">
+            <button>AGENDAR HORÁRIO</button>
+        </a>
+    </div>
+
+    <!-- HISTÓRICO -->
+<div class="historico" id="historico">
+    <h2>Meus agendamentos</h2>
+
+    {% if agendamentos %}
+        {% for ag in agendamentos %}
+        <div class="corte">
+            <p>{{ ag["servico"] if ag["servico"] else ag["plano"] }}</p>
+            <span>{{ ag["data"] }} • {{ ag["horario"] }} • {{ ag["profissional"] }} • {{ ag["status"] }}</span>
+        </div>
+        {% endfor %}
+    {% else %}
+    <p style="text-align: center; color: #999;">Nenhum agendamento ainda</p>
+    {% endif %}
+</div>
+
+    <script>
+    function abrirMenu() {
+        console.log("Clicou no menu!");
+        const sidebar = document.getElementById("sidebar");
+        console.log("Sidebar:", sidebar);
+        if (sidebar) {
+            sidebar.classList.toggle("ativo");
+            console.log("Toggled! Classes:", sidebar.classList);
+        }
+    }
+
+    document.addEventListener("click", function(e) {
+        const sidebar = document.getElementById("sidebar");
+        const botao = document.querySelector(".menu");
+        if (sidebar && botao) {
+            if (!sidebar.contains(e.target) && !botao.contains(e.target)) {
+                sidebar.classList.remove("ativo");
+            }
+        }
+    });
+    </script>
+
+</body>
+</html>

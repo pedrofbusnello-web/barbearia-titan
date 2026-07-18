@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirmar agendamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='confagen.css') }}">
+</head>
+<body>
+    <div class="container">
+
+        <h1>Confirmar agendamento do plano</h1>
+        <hr>
+
+        {% if erro %}
+        <div style="color: red; margin-bottom: 20px; padding: 10px; background: #ffe6e6; border-radius: 5px;">
+            {{ erro }}
+        </div>
+        {% endif %}
+
+        <p>Por favor, confirme os detalhes do seu agendamento:</p>
+
+        <form method="POST" action="/confagen">
+            <label>Plano escolhido</label>
+            <input type="text" value="{{ plano }}" readonly style="background: #f0f0f0;">
+
+            <label>Profissional</label>
+            <input type="text" id="profissional-texto" value="{{ profissional }}" readonly style="background: #f0f0f0;">
+            <input type="hidden" id="profissional" value="{{ profissional }}">
+
+            <label>Data</label>
+            <input type="date" name="data" id="data" required>
+
+            <label>Horário</label>
+            <select name="horario" id="horario" required>
+                <option value="" disabled selected>
+                    Selecione uma data primeiro
+                </option>
+            </select>
+
+            <button type="submit">Confirmar agendamento</button>
+        </form>
+
+    </div>
+
+    <script>
+        const campoData = document.getElementById("data");
+        const campoProfissional = document.getElementById("profissional");
+        const campoHorario = document.getElementById("horario");
+
+        const hoje = new Date().toISOString().split("T")[0];
+        campoData.setAttribute("min", hoje);
+
+        async function atualizarHorarios() {
+            const data = campoData.value;
+            const profissional = campoProfissional.value;
+
+            campoHorario.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+
+            if (!data || !profissional) {
+                campoHorario.innerHTML = '<option value="" disabled selected>Selecione uma data primeiro</option>';
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/horarios-disponiveis?data=${data}&profissional=${profissional}`);
+                const dados = await resposta.json();
+
+                if (!dados.horarios || dados.horarios.length === 0) {
+                    campoHorario.innerHTML = '<option value="" disabled selected>Nenhum horário disponível nesse dia</option>';
+                    return;
+                }
+
+                let opcoes = '<option value="" disabled selected>Selecione um horário</option>';
+                dados.horarios.forEach(h => {
+                    opcoes += `<option value="${h}">${h}</option>`;
+                });
+                campoHorario.innerHTML = opcoes;
+
+            } catch (erro) {
+                campoHorario.innerHTML = '<option value="" disabled selected>Erro ao carregar horários</option>';
+            }
+        }
+
+        campoData.addEventListener("change", atualizarHorarios);
+    </script>
+</body>
+</html>

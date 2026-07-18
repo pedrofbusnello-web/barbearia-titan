@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Finalizar plano Vip</title>
+<link rel="stylesheet" href="../static/planovip.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>Finalizar plano VIP</h1>
+
+        <hr>
+
+        <form action="/coud" method="POST">
+
+            <label>Plano escolhido</label>
+
+            <input type="text" name="plano" value="{{ plano }}" readonly>
+
+            <label>Valor</label>
+
+            <input type="text" name="valor" value="R$ {{ valor }}" readonly>
+            
+            <label for="profissional">Profissional</label>
+
+            <select name="profissional" id="profissional" required>
+
+                <option value="" disabled selected>
+                    Selecione um profissional
+                </option>
+
+                <option value="joao">João</option>
+                <option value="pedro">Pedro</option>
+                <option value="bernardo">Bernardo</option>
+                <option value="pablo">Pablo</option>
+
+            </select>
+
+            <label for="pagamento">Forma de pagamento</label>
+
+            <select name="pagamento" id="pagamento" required>
+
+                <option value="" disabled selected>
+                    Selecione uma forma de pagamento
+                </option>
+
+                <option value="Cartão de crédito">Cartão de crédito</option>
+                <option value="Pix">Pix</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de débito">Cartão de débito</option>
+
+            </select>
+
+            <button type="submit">
+                Finalizar compra
+            </button>
+
+        </form>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meus Dados</title>
+    <link rel="stylesheet" href="../static/meusdados.css">
+</head>
+
+<body>
+
+    <div class="topo">
+        <a href="/minhaconta" class="voltar">← Voltar</a>
+        <h1>BARBEARIA TITAN</h1>
+    </div>
+
+    <div class="container">
+
+        <h2>Meus Dados</h2>
+
+        <div class="campo">
+            <label>Usuário</label>
+            <div class="valor">{{ user["usuario"] }}</div>
+        </div>
+
+        <div class="campo">
+            <label>E-mail</label>
+            <div class="valor">{{ user["email"] }}</div>
+        </div>
+
+        <div class="campo">
+            <label>Telefone</label>
+            <div class="valor">{{ user["telefone"] }}</div>
+        </div>
+
+        <a href="/editar-dados"><button>Editar dados</button></a>
+
+    </div>
+
+</body>
+</html>

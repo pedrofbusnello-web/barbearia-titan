@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bloquear Horário</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='agendamento.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Bloquear Horário</h1>
+        <p class="subtitulo">Selecione a data e horário que deseja bloquear</p>
+
+        <form method="POST">
+            <div class="linha">
+                <div>
+                    <label>Data:</label>
+                    <input type="date" name="data" required>
+                </div>
+            </div>
+
+            <div class="linha">
+                <div>
+                    <label>Horário:</label>
+                    <select name="horario" id="horario" required>
+                        <option value="">Selecione um horário</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if mensagem %}
+            <p style="color: green; text-align: center;">{{ mensagem }}</p>
+            {% endif %}
+
+            {% if erro %}
+            <p style="color: red; text-align: center;">{{ erro }}</p>
+            {% endif %}
+
+            <div class="botoes">
+                <a href="/minhaconta">
+                    <button type="button">Cancelar</button>
+                </a>
+                <button type="submit">Bloquear</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.querySelector('input[type="date"]').addEventListener('change', function() {
+            const data = this.value;
+            const horarioSelect = document.getElementById('horario');
+            
+            if (data) {
+                fetch(`/horarios-disponiveis?data=${data}&profissional={{ session['usuario'] }}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        horarioSelect.innerHTML = '<option value="">Selecione um horário</option>';
+                        data.horarios.forEach(horario => {
+                            const option = document.createElement('option');
+                            option.value = horario;
+                            option.textContent = horario;
+                            horarioSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    </script>
+
+</body>
+</html>

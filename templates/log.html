@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Barbearia Titan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="login-box">
+
+        <h1>Entrar na sua conta</h1>
+
+        <p>
+            Para escolher um plano você precisa estar logado
+        </p>
+
+        <form method="POST" action="/login">
+
+            <label>Usuário, Email ou Telefone:</label>
+
+            <input
+                type="text"
+                name="usuario"
+                value="{{ usuario_digitado }}"
+                placeholder="Email ou Telefone"
+                required
+            >
+
+            <label>Senha:</label>
+
+            <input
+                type="password"
+                name="senha"
+                placeholder="Senha"
+                required
+            >
+
+            <p>
+                <em>
+                    <a href="/recuperar-senha">
+                        Esqueci minha senha
+                    </a>
+                </em>
+            </p>
+
+            <input type="submit" value="Entrar">
+
+            {% if mensagem %}
+            <p style="color:red;">
+                {{ mensagem }}
+            </p>
+            {% endif %}
+            <hr>
+
+            <p>
+                Não possui conta?
+                <a href="/cadastro">
+                    Cadastre-se
+                </a>
+            </p>
+
+        </form>
+
+    </div>
+
+</body>
+</html>

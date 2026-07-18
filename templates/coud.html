@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirmar plano</title>
+    <link rel="stylesheet" href="../static/coud.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>Resumo assinatura</h1>
+
+        <hr>
+
+        <label>Plano escolhido</label>
+        <select disabled>
+            <option selected>{{ plano }}</option>
+        </select>
+
+        <label>Profissional</label>
+        <select disabled>
+            <option selected>{{ profissional }}</option>
+        </select>
+
+        <label>Forma de pagamento</label>
+        <select disabled>
+            <option selected>{{ pagamento }}</option>
+        </select>
+
+        <a href="/confagen" class="btn-agora">
+            Agendar horário
+        </a>
+
+        <a href="/minhaconta" class="btn-depois">
+            Agendar depois
+        </a>
+
+    </div>
+
+</body>
+</html>

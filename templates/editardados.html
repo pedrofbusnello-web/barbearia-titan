@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar Dados</title>
+    <link rel="stylesheet" href="../static/meusdados.css">
+</head>
+
+<body>
+
+    <div class="topo">
+        <a href="/meusdados" class="voltar">← Voltar</a>
+        <h1>BARBEARIA TITAN</h1>
+    </div>
+
+    <div class="container">
+
+        <h2>Editar Dados</h2>
+
+        {% if mensagem %}
+        <div style="color: red; background: #ffe6e6; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
+            {{ mensagem }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/editar-dados">
+
+            <div class="campo">
+                <label>Usuário (não editável)</label>
+                <div class="valor">{{ user["usuario"] }}</div>
+            </div>
+
+            <div class="campo">
+                <label>E-mail</label>
+                <input
+                    type="email"
+                    name="email"
+                    value="{{ user['email'] }}"
+                    required
+                    style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #dcdcdc; border-radius:10px; font-size:14px;"
+                >
+            </div>
+
+            <div class="campo">
+                <label>Telefone</label>
+                <input
+                    type="tel"
+                    name="telefone"
+                    value="{{ user['telefone'] }}"
+                    placeholder="(54) 99999-9999"
+                    required
+                    style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #dcdcdc; border-radius:10px; font-size:14px;"
+                >
+            </div>
+
+            <hr style="margin: 20px 0;">
+            <p style="color:#666; font-size:14px;">Preencha abaixo apenas se quiser trocar a senha:</p>
+
+            <div class="campo">
+                <label>Senha atual</label>
+                <input
+                    type="password"
+                    name="senha_atual"
+                    placeholder="Digite sua senha atual"
+                    style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #dcdcdc; border-radius:10px; font-size:14px;"
+                >
+            </div>
+
+            <div class="campo">
+                <label>Nova senha</label>
+                <input
+                    type="password"
+                    name="nova_senha"
+                    placeholder="Nova senha (mínimo 6 caracteres)"
+                    style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #dcdcdc; border-radius:10px; font-size:14px;"
+                >
+            </div>
+
+            <div class="campo">
+                <label>Confirmar nova senha</label>
+                <input
+                    type="password"
+                    name="conf_nova_senha"
+                    placeholder="Repita a nova senha"
+                    style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #dcdcdc; border-radius:10px; font-size:14px;"
+                >
+            </div>
+
+            <button type="submit">Salvar alterações</button>
+
+        </form>
+
+    </div>
+
+</body>
+</html>
