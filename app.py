@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-import sqlite3
+import psycopg2
+import psycopg2.extras
+import os
 import re
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'titan_secret_key_super_secreto_2026_MUDAR_EM_PRODUCAO')
@@ -63,9 +64,17 @@ def validar_email_formato(email):
 # =========================
 # AUXILIARES
 # =========================
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# Render às vezes fornece a URL como "postgres://", o SQLAlchemy exige
+# "postgresql://" (o psycopg2 aceita as duas, mas já deixamos padronizado)
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+
 def get_db_connection():
-    conn = sqlite3.connect("barbearia.db")
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL)
+    conn.cursor_factory = psycopg2.extras.RealDictCursor
     return conn
 
 
@@ -110,7 +119,7 @@ def horario_disponivel(conn, profissional, data, horario, ignorar_id=None):
     c = conn.cursor()
     c.execute("""
         SELECT id FROM agendamentos
-        WHERE profissional = ? AND data = ? AND horario = ? AND status != 'CANCELADO'
+        WHERE profissional = %s AND data = %s AND horario = %s AND status != 'CANCELADO'
     """, (profissional, data, horario))
 
     row = c.fetchone()
@@ -187,7 +196,7 @@ def agendar():
         c.execute("""
             INSERT INTO agendamentos
             (usuario, nome, telefone, servico, profissional, data, horario, pagamento, observacoes, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (usuario, nome, telefone, servico, profissional,
               data, horario, pagamento, observacoes, "AGENDADO"))
 
@@ -225,7 +234,7 @@ def login():
             # Aceita login por usuário, email OU telefone
             c.execute("""
                 SELECT id, usuario, tipo, senha FROM usuarios
-                WHERE usuario = ? OR email = ? OR telefone = ?
+                WHERE usuario = %s OR email = %s OR telefone = %s
             """, (login_input, login_input, login_input))
 
             user = c.fetchone()
@@ -258,29 +267,29 @@ def login():
 def recuperar_senha():
     if request.method == "POST":
         email = request.form.get("email", "").strip()
-        
+
         if not email:
             return render_template("recuperar_senha.html", mensagem="❌ Digite seu email", enviado=False)
-        
+
         if not validar_email_formato(email):
             return render_template("recuperar_senha.html", mensagem="❌ Email inválido", enviado=False)
-        
+
         try:
             conn = get_db_connection()
             c = conn.cursor()
-            c.execute("SELECT usuario FROM usuarios WHERE email = ?", (email,))
+            c.execute("SELECT usuario FROM usuarios WHERE email = %s", (email,))
             user = c.fetchone()
             conn.close()
-            
+
             if not user:
                 return render_template("recuperar_senha.html", mensagem="❌ Email não encontrado", enviado=False)
-            
+
             return render_template("recuperar_senha.html", mensagem="✅ Verifique seu email!", enviado=True)
-        
+
         except Exception as e:
             print(f"Erro ao recuperar senha: {e}")
             return render_template("recuperar_senha.html", mensagem="❌ Erro ao processar", enviado=False)
-    
+
     return render_template("recuperar_senha.html", mensagem="", enviado=False)
 
 
@@ -322,7 +331,7 @@ def cadastro():
 
             c.execute("""
                 INSERT INTO usuarios (usuario, email, telefone, senha, tipo)
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s)
             """, (usuario, email, telefone, senha_hash, "cliente"))
 
             conn.commit()
@@ -338,7 +347,9 @@ def cadastro():
 
             return redirect(url_for("minhaconta"))
 
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
+            conn.rollback()
+            conn.close()
             return render_template("cadastro.html", mensagem="❌ Usuário, email ou telefone já cadastrado")
         except Exception as e:
             print(f"Erro ao cadastrar: {e}")
@@ -498,13 +509,13 @@ def confagen():
             c.execute("""
                 INSERT INTO agendamentos
                 (usuario, plano, profissional, data, horario, pagamento, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (usuario, plano, profissional, data, horario, pagamento, "AGENDADO"))
 
             # Salva assinatura VIP
             c.execute("""
                 INSERT INTO assinaturas (usuario, plano, profissional, pagamento, data_inicio, status)
-                VALUES (?, ?, ?, ?, ?, 'ATIVA')
+                VALUES (%s, %s, %s, %s, %s, 'ATIVA')
             """, (usuario, plano, profissional, pagamento, datetime.now().strftime("%Y-%m-%d")))
 
             conn.commit()
@@ -577,7 +588,7 @@ def minhaconta():
                        COALESCE(observacoes, '-') AS observacoes,
                        COALESCE(pagamento, '-')   AS pagamento
                 FROM agendamentos
-                WHERE profissional = ?
+                WHERE profissional = %s
                 ORDER BY data ASC, horario ASC
             """, (usuario,))
 
@@ -593,7 +604,7 @@ def minhaconta():
             c.execute("""
                 SELECT servico, plano, data, horario, profissional
                 FROM agendamentos
-                WHERE usuario = ? AND data >= ? AND status != 'CANCELADO'
+                WHERE usuario = %s AND data >= %s AND status != 'CANCELADO'
                 ORDER BY data ASC, horario ASC
                 LIMIT 1
             """, (usuario, hoje))
@@ -602,7 +613,7 @@ def minhaconta():
             c.execute("""
                 SELECT id, servico, plano, data, horario, profissional, status
                 FROM agendamentos
-                WHERE usuario = ?
+                WHERE usuario = %s
                 ORDER BY data DESC
                 LIMIT 10
             """, (usuario,))
@@ -634,7 +645,7 @@ def cancelar_meu_agendamento(id):
 
         c.execute("""
             SELECT id, data, horario, status FROM agendamentos
-            WHERE id = ? AND usuario = ?
+            WHERE id = %s AND usuario = %s
         """, (id, usuario))
         ag = c.fetchone()
 
@@ -653,7 +664,7 @@ def cancelar_meu_agendamento(id):
 
         c.execute("""
             UPDATE agendamentos SET status = 'CANCELADO'
-            WHERE id = ? AND usuario = ?
+            WHERE id = %s AND usuario = %s
         """, (id, usuario))
 
         conn.commit()
@@ -677,7 +688,7 @@ def meusdados():
     try:
         conn = get_db_connection()
         c    = conn.cursor()
-        c.execute("SELECT usuario, email, telefone FROM usuarios WHERE usuario = ?", (usuario,))
+        c.execute("SELECT usuario, email, telefone FROM usuarios WHERE usuario = %s", (usuario,))
         user = c.fetchone()
         conn.close()
         return render_template("meusdados.html", user=user)
@@ -698,7 +709,7 @@ def editar_dados():
 
     conn = get_db_connection()
     c    = conn.cursor()
-    c.execute("SELECT usuario, email, telefone, senha FROM usuarios WHERE usuario = ?", (usuario,))
+    c.execute("SELECT usuario, email, telefone, senha FROM usuarios WHERE usuario = %s", (usuario,))
     user = c.fetchone()
 
     if request.method == "POST":
@@ -733,20 +744,21 @@ def editar_dados():
         try:
             if nova_senha_hash:
                 c.execute("""
-                    UPDATE usuarios SET email = ?, telefone = ?, senha = ?
-                    WHERE usuario = ?
+                    UPDATE usuarios SET email = %s, telefone = %s, senha = %s
+                    WHERE usuario = %s
                 """, (email, telefone, nova_senha_hash, usuario))
             else:
                 c.execute("""
-                    UPDATE usuarios SET email = ?, telefone = ?
-                    WHERE usuario = ?
+                    UPDATE usuarios SET email = %s, telefone = %s
+                    WHERE usuario = %s
                 """, (email, telefone, usuario))
 
             conn.commit()
             conn.close()
             return redirect(url_for("meusdados"))
 
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
+            conn.rollback()
             conn.close()
             return render_template("editar_dados.html", user=user, mensagem="❌ Email ou telefone já está em uso por outra conta")
         except Exception as e:
@@ -757,7 +769,8 @@ def editar_dados():
     conn.close()
     return render_template("editar_dados.html", user=user, mensagem="")
 
-    # =========================
+
+# =========================
 # BLOQUEAR HORÁRIO (BARBEIRO)
 # =========================
 @app.route("/bloquear-horario", methods=["GET", "POST"])
@@ -769,7 +782,7 @@ def bloquear_horario():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        data   = request.form.get("data",   "").strip()
+        data    = request.form.get("data",    "").strip()
         horario = request.form.get("horario", "").strip()
 
         if not data or not horario:
@@ -785,12 +798,12 @@ def bloquear_horario():
             if not horario_disponivel(conn, usuario, data, horario):
                 conn.close()
                 return render_template("bloquear_horario.html", erro="⚠️ Horário já ocupado ou bloqueado!")
-            
+
             c = conn.cursor()
             c.execute("""
                 INSERT INTO agendamentos
                 (usuario, nome, profissional, data, horario, status, tipo)
-                VALUES (?, 'BLOQUEIO', ?, ?, ?, 'BLOQUEADO', 'bloqueio')
+                VALUES (%s, 'BLOQUEIO', %s, %s, %s, 'BLOQUEADO', 'bloqueio')
                 """, (usuario, usuario, data, horario))
 
             conn.commit()
@@ -824,8 +837,8 @@ def atualizar_status(id, status):
         conn = get_db_connection()
         c    = conn.cursor()
         c.execute("""
-            UPDATE agendamentos SET status = ?
-            WHERE id = ? AND profissional = ?
+            UPDATE agendamentos SET status = %s
+            WHERE id = %s AND profissional = %s
         """, (status, id, usuario))
         conn.commit()
         conn.close()
@@ -855,7 +868,7 @@ def horarios_disponiveis_api():
             c    = conn.cursor()
             c.execute("""
                 SELECT horario FROM agendamentos
-                WHERE profissional = ? AND data = ? AND status != 'CANCELADO'
+                WHERE profissional = %s AND data = %s AND status != 'CANCELADO'
             """, (profissional, data))
             ocupados = {row["horario"] for row in c.fetchall()}
             conn.close()
@@ -875,15 +888,15 @@ def horarios_disponiveis_api():
 
 
 # =========================
-# INICIALIZA BANCO
+# INICIALIZA BANCO (PostgreSQL/Render)
 # =========================
 def init_db():
-    conn = sqlite3.connect("barbearia.db")
+    conn = get_db_connection()
     c    = conn.cursor()
 
     c.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             usuario TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE,
             telefone TEXT UNIQUE,
@@ -895,7 +908,7 @@ def init_db():
 
     c.execute("""
         CREATE TABLE IF NOT EXISTS agendamentos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             usuario TEXT,
             nome TEXT,
             telefone TEXT,
@@ -907,13 +920,14 @@ def init_db():
             pagamento TEXT,
             observacoes TEXT,
             status TEXT DEFAULT 'AGENDADO',
+            tipo TEXT,
             data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
     c.execute("""
         CREATE TABLE IF NOT EXISTS assinaturas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             usuario TEXT NOT NULL,
             plano TEXT NOT NULL,
             profissional TEXT NOT NULL,
@@ -926,6 +940,16 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
+# Cria as tabelas automaticamente ao subir o app no Render
+# (roda 1x quando o worker inicia; se a tabela já existir, o CREATE TABLE
+# IF NOT EXISTS simplesmente não faz nada)
+with app.app_context():
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Erro ao inicializar banco: {e}")
 
 
 @app.before_request
@@ -945,6 +969,5 @@ def erro_servidor(e):
 
 
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=False, host='127.0.0.1', port=5000)
+    app.run(debug=False)
     # Troque debug=True durante desenvolvimento local
